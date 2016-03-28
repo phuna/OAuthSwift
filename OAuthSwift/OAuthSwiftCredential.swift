@@ -113,7 +113,11 @@ public class OAuthSwiftCredential: NSObject, NSCoding {
     }
     
     public class func generateNonce() -> String {
-        return  (NSUUID().UUIDString as NSString).substringToIndex(8)
+        let s = NSMutableData(length: 32)
+        SecRandomCopyBytes(kSecRandomDefault, s!.length, UnsafeMutablePointer<UInt8>(s!.mutableBytes))
+        let base64str = s!.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+        let removeChars: [Character] = ["+", "/", "="]
+        return String(base64str.characters.filter{ !removeChars.contains($0) })
     }
   
     public func authorizationHeaderForMethod(method: OAuthSwiftHTTPRequest.Method, url: NSURL, parameters: Dictionary<String, AnyObject>, body: NSData? = nil, timestamp: String, nonce: String) -> String {
